@@ -74,6 +74,15 @@ x2_data_expanded$salinity<-predict(salX2mod,x2_data_expanded)
 # Ensure that there will be no negative salinity values and use the minimum value in Sam's conversion table
 x2_data_expanded$salinity <- ifelse(x2_data_expanded$salinity<0.1,0.1,x2_data_expanded$salinity)
 
+# Finalize data format
+x2_data_expanded <- x2_data_expanded %>%
+  mutate(year=year(Date)) %>% rename(region=Region, month=Month) %>% select(-Date,-X2,-X2_original) %>%
+  spread(Scenario,salinity) 
+
+# Rename column names to sal_
+colnames(x2_data_expanded)[4:ncol(x2_data_expanded)] <- paste("sal", colnames(x2_data_expanded)[4:ncol(x2_data_expanded)] , sep = "_")
+
+
 #Export output file for  model input
 write.csv(x2_data_expanded,file.path(salinity_root,"converted_salinity_data.csv"),row.names=F)
 
