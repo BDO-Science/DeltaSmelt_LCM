@@ -337,16 +337,13 @@ for (i in 1:nrow(sal_conversion_plots)) {
 # Read salinity data
 
 ```{r, message=FALSE}
-salinity_data<-read.csv("../X2_salinity_analysis/converted_salinity_data.csv") %>%
-  mutate(year=year(Date)) %>% rename(region=Region, month=Month) %>% select(-Date,-X2,-X2_original) %>%
-  spread(Scenario,salinity) 
+salinity_data<-read.csv("../X2_salinity_analysis/converted_salinity_data.csv") 
 
 #Original file from CSAMP SDM
-original_scenario_file<-read.csv("CSAMP_DS_SDM_salinity_scenarios.csv")
+original_scenario_file<-read.csv("../X2_salinity_analysis/base_salinity_data.csv")
 
 #Join the two datasets
-scenario_file <- original_scenario_file %>% select(c(1:6)) %>% left_join(salinity_data) %>% 
-  rename(sal_NAA=NAA,sal_D1641=D1641)
+scenario_file <- original_scenario_file %>% select(c(2:5)) %>% left_join(salinity_data) 
 
 ```
 
