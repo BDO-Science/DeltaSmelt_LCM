@@ -2,7 +2,7 @@
 root <- "~/GitHub/DeltaSmelt_LCM"
 setwd(root)
 
-zoop_root <- file.path(root,"Zooplankton_input_conversion_for_LCM")
+zoop_root <- file.path(root,"Salinity_Zooplankton_analysis")
 zoop_original_root <- file.path(root,"Zooplankton_input_original")
 
 library(reshape)
@@ -15,15 +15,18 @@ library(readxl)
 
 IMBR_LCM_comparison <- ggplot()+
   geom_sf(data=WW_Delta,fill="cadetblue1", color="cadetblue1")+
-  geom_sf(data=R_EDSM_Regions_1617P1,fill=NA,color="black")+
+  geom_sf(data=R_EDSM_Regions_1617P1,fill=NA,color="black",size=2)+
   geom_sf(data=R_DSIBM,fill=NA, color="red")+
-  geom_sf_label(data=R_DSIBM, aes(label = SUBREGION),size=2.5,color="red")+
-  geom_sf_label(data=R_EDSM_Regions_1617P1, aes(label = Region),size=2.5,color="black")+
-  theme_bw()
-  
+  geom_sf_label(data=R_DSIBM, aes(label = SUBREGION),size=2,color="red",fill = alpha(c("white"),0.5))+
+  geom_sf_label(data=R_EDSM_Regions_1617P1, aes(label = Region),size=2,color="black",fill = alpha(c("white"),0.5))+
+  theme_bw()+
+  theme(axis.title.x=element_blank(), 
+        axis.title.y=element_blank())
+
+IMBR_LCM_comparison
 #Print out the map
-tiff(filename=file.path(zoop_root,"Figure_Map_compare_IBMR_LCM.tiff"), units="in",type="cairo", bg="white", height=10, 
-     width=12, res=300, compression="lzw")
+tiff(filename=file.path(zoop_root,"Figure_Map_compare_IBMR_LCM.tiff"), units="in",type="cairo", bg="white", height=7.5, 
+     width=9, res=300, compression="lzw")
 IMBR_LCM_comparison
 dev.off()
   
