@@ -224,8 +224,14 @@ write.csv(zoop_data_LCM_scenarios, file="ZooMysid_2022ROC_EffectsAnalysis_df_med
 #Further aggregate and subset data per email with Will Smith (USFWS)
 zoop_data_feb_mar_ACM <- zoop_data_LCM_scenarios %>% group_by(Year,Month,scenario) %>% summarise(ACM_BPUV=mean(ACM_BPUV)) %>%
   filter(Month %in% c("February","March")) %>% pivot_wider(names_from = Month, values_from = ACM_BPUV) %>%
-  rename(ACM_Feb = February, ACM_Mar = March,Calendar_Year = Year)
-
+  rename(ACM_Feb = February, ACM_Mar = March,Calendar_Year = Year) %>%
+  mutate(scenario=gsub("sal_","",scenario)) %>%
+  mutate(zoop_model_prediction= case_when(grepl("l95",scenario) ~ "l95",
+                                          grepl("median",scenario) ~ "median",
+                                          grepl("u95",scenario) ~ "u95")) %>%
+  mutate(scenario=gsub("_l95","",scenario)) %>%
+  mutate(scenario=gsub("_median","",scenario)) %>%
+  mutate(scenario=gsub("_u95","",scenario)) 
 
 #Export the final dataset
 write.csv(zoop_data_feb_mar_ACM, file="ZooMysid_2022ROC_EffectsAnalysis_Feb_Mar_ACM.csv", row.names=F)

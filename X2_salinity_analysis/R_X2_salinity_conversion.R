@@ -14,13 +14,18 @@ library(conflicted)
 conflict_prefer("rename", "dplyr")
 
 # Load X2 data from CalSim3
+EXP1_data <- read.csv(file.path(hydro_root,"EXP1_CalSim3_data.csv")) 
+EXP3_data <- read.csv(file.path(hydro_root,"EXP3_CalSim3_data.csv")) 
 NAA_data <- read.csv(file.path(hydro_root,"NAA_CalSim3_data.csv")) 
-D1641_data <- read.csv(file.path(hydro_root,"D1641_CalSim3_data.csv")) %>%
-  mutate(X2_current=X2_current+1)
+Alt2_wTUCP_data <- read.csv(file.path(hydro_root,"Alt2_wTUCP_CalSim3_data.csv")) 
+Alt2_woTUCP_data <- read.csv(file.path(hydro_root,"Alt2_woTUCP_CalSim3_data.csv")) 
 
 # Combine X2 data
 x2_data <- NAA_data %>% select(Date,X2_current) %>% mutate(Scenario="NAA") %>%
-  bind_rows((D1641_data %>% select(Date,X2_current) %>% mutate(Scenario="D1641"))) 
+  bind_rows((EXP1_data %>% select(Date,X2_current) %>% mutate(Scenario="EXP1"))) %>%
+  bind_rows((EXP3_data %>% select(Date,X2_current) %>% mutate(Scenario="EXP3"))) %>%
+  bind_rows((Alt2_wTUCP_data %>% select(Date,X2_current) %>% mutate(Scenario="Alt2_wTUCP"))) %>%
+  bind_rows((Alt2_woTUCP_data %>% select(Date,X2_current) %>% mutate(Scenario="Alt2_woTUCP"))) 
 
 x2_data <- na.omit(x2_data) %>% rename(X2 = X2_current) %>% mutate(Month=month(Date))
 
