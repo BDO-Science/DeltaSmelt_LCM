@@ -194,7 +194,7 @@ model_data_for_LCM_adjusted <- model_data_for_LCM %>% select(-zoop_taxa_ratio,-A
 ```{r conversion}
 #Read data from LCM
 zoop_data_LCM_raw <-read.csv("../Zooplankton_input_original/ZooMysid_74_19_df_median.csv") 
-zoop_data_LCM <- zoop_data_LCM_raw %>% filter(Year %in% c(1995:2016))
+zoop_data_LCM <- zoop_data_LCM_raw %>% filter(Year %in% c(1995:2017))
 
 #Find maximum value for each data
 zoop_data_LCM_max <- zoop_data_LCM_raw %>% pivot_longer(cols=ends_with("BPUV"), names_to = "Taxa", values_to = "BPUV") %>%
@@ -222,19 +222,32 @@ zoop_data_LCM_scenarios <- zoop_data_LCM_expanded %>% mutate(BPUV_adjusted= ifel
 write.csv(zoop_data_LCM_scenarios, file="ZooMysid_2022ROC_EffectsAnalysis_df_median.csv", row.names=F)
 
 #Further aggregate and subset data per email with Will Smith (USFWS)
-zoop_data_feb_mar_ACM <- zoop_data_LCM_scenarios %>% group_by(Year,Month,scenario) %>% summarise(ACM_BPUV=mean(ACM_BPUV)) %>%
+#Use cohort year (time is indexed by cohort year, with the first month of the year beginning in April)
+
+
+zoop_data_feb_mar_ACM <- zoop_data_LCM_scenarios %>% mutate(Cohort_Year=ifelse(Month %in% c("January","February","March"),Year-1,Year)) %>%
+  group_by(Cohort_Year,Year,Month,scenario) %>% summarise(ACM_BPUV=mean(ACM_BPUV)) %>%
   filter(Month %in% c("February","March")) %>% pivot_wider(names_from = Month, values_from = ACM_BPUV) %>%
-  rename(ACM_Feb = February, ACM_Mar = March,Calendar_Year = Year) %>%
+  rename(ACM_BPUV_Feb1Feb1 = February, ACM_BPUV_Mar1Mar1 = March,Calendar_Year = Year) %>%
   mutate(scenario=gsub("sal_","",scenario)) %>%
   mutate(zoop_model_prediction= case_when(grepl("l95",scenario) ~ "l95",
                                           grepl("median",scenario) ~ "median",
                                           grepl("u95",scenario) ~ "u95")) %>%
   mutate(scenario=gsub("_l95","",scenario)) %>%
   mutate(scenario=gsub("_median","",scenario)) %>%
-  mutate(scenario=gsub("_u95","",scenario)) 
+  mutate(scenario=gsub("_u95","",scenario)) %>% filter(Cohort_Year>1994)
 
-#Export the final dataset
+#Export the final zoop dataset
 write.csv(zoop_data_feb_mar_ACM, file="ZooMysid_2022ROC_EffectsAnalysis_Feb_Mar_ACM.csv", row.names=F)
+
+#Combine with flow dataset
+zoop_flow_data_LCM <- zoop_data_feb_mar_ACM %>% ungroup() %>% filter(zoop_model_prediction=="median") %>%
+  select(Cohort_Year,scenario,ACM_BPUV_Feb1Feb1,ACM_BPUV_Mar1Mar1) %>% filter(Cohort_Year>1994) %>%
+  left_join(read.csv("../Hydro model output/FlowData_2022ROC_EffectsAnalysis_CohortYear.csv"))
+
+#Export the final flow and zoop dataset
+write.csv(zoop_flow_data_LCM, file="FlowZoopData_2022ROC_EffectsAnalysis_CohortYear.csv", row.names=F)
+
 
 ```
 

@@ -115,66 +115,69 @@ Alt2_woTUCP_data <- Alt2_woTUCP_data %>% mutate(scenario="Alt2_woTUCP")
 
 combined_data <- bind_rows(EXP1_data,EXP3_data,NAA_data,Alt2_wTUCP_data,Alt2_woTUCP_data)
 
+#Per Will Smith's excel documentation
+#-time is indexed by cohort year, with the first month of the year beginning in April
+
 #Summer Delta Outflow covariate
-data_DeltaOutflow <- combined_data %>% mutate(Calendar_Year=year(Date),Month=month(Date)) %>% 
+data_DeltaOutflow <- combined_data %>% mutate(Cohort_Year=ifelse(month(Date)<4,year(Date)-1,year(Date)),Month=month(Date)) %>% 
   #Filter June-August per Smith et al. 2021
   filter(Month %in% c(6:8)) %>% 
   #Filter year 1995-2016 for Delta Smelt LCM
-  filter(Calendar_Year %in% c(1995:2016)) %>%
+  filter(Cohort_Year %in% c(1995:2016)) %>%
   #sum flow by month
   mutate(SumOutflow_Jun_Aug=case_when(Month==6 ~ OUTFLOW*30,
                                             Month==7 ~OUTFLOW*31,
                                             Month==8 ~OUTFLOW*31)) %>%
   #summarize by year
-  group_by(Calendar_Year,scenario) %>% summarise(DeltaOutflow_Jun_Aug=sum(SumOutflow_Jun_Aug))
+  group_by(Cohort_Year,scenario) %>% summarise(Outflow_Jun0Aug0=sum(SumOutflow_Jun_Aug))
 
 #Apr-May OMR covariate
-data_OMR_Apr_May <- combined_data %>% mutate(Calendar_Year=year(Date),Month=month(Date)) %>% 
+data_OMR_Apr_May <- combined_data %>% mutate(Cohort_Year=ifelse(month(Date)<4,year(Date)-1,year(Date)),Month=month(Date)) %>% 
   #Filter Apr-May per Smith et al. 2021
   filter(Month %in% c(4:5)) %>% 
   #Filter year 1995-2016 for Delta Smelt LCM
-  filter(Calendar_Year %in% c(1995:2016)) %>%
+  filter(Cohort_Year %in% c(1995:2016)) %>%
   #summarize by year
-  group_by(Calendar_Year,scenario) %>% summarise(OMR_Apr_May=mean(OMR))
+  group_by(Cohort_Year,scenario) %>% summarise(OMR_AprMar=mean(OMR))
 
 #June OMR covariate
-data_OMR_June <- combined_data %>% mutate(Calendar_Year=year(Date),Month=month(Date)) %>% 
+data_OMR_June <- combined_data %>% mutate(Cohort_Year=ifelse(month(Date)<4,year(Date)-1,year(Date)),Month=month(Date)) %>% 
   #Filter June per Smith et al. 2021
   filter(Month %in% c(6)) %>% 
   #Filter year 1995-2016 for Delta Smelt LCM
-  filter(Calendar_Year %in% c(1995:2016)) %>%
-  rename(OMR_June=OMR) %>% select(Calendar_Year,scenario,OMR_June)
+  filter(Cohort_Year %in% c(1995:2016)) %>%
+  rename(OMR_Jun=OMR) %>% select(Cohort_Year,scenario,OMR_Jun)
 
 #Dec-Jan OMR covariate
 data_OMR_Dec_Jan <- combined_data %>% 
   #Use water year instead for this one
-  mutate(Water_Year=ifelse(month(Date)>9,year(Date)+1,year(Date)),Month=month(Date)) %>% 
+  mutate(Cohort_Year=ifelse(month(Date)<4,year(Date)-1,year(Date)),Month=month(Date)) %>% 
   #Filter Dec-Jan per Smith et al. 2021
   filter(Month %in% c(12,1)) %>% 
   #Filter year 1995-2016 for Delta Smelt LCM
-  filter(Water_Year %in% c(1995:2016)) %>%
-  group_by(Water_Year,scenario) %>% summarise(OMR_Dec_Jan=mean(OMR))
+  filter(Cohort_Year %in% c(1995:2016)) %>%
+  group_by(Cohort_Year,scenario) %>% summarise(OMR_DecJan=mean(OMR))
 
 #February OMR covariate
-data_OMR_Feb <- combined_data %>% mutate(Calendar_Year=year(Date),Month=month(Date)) %>% 
+data_OMR_Feb <- combined_data %>% mutate(Cohort_Year=ifelse(month(Date)<4,year(Date)-1,year(Date)),Month=month(Date)) %>% 
   #Filter February per Smith et al. 2021
   filter(Month %in% c(2)) %>% 
   #Filter year 1995-2016 for Delta Smelt LCM
-  filter(Calendar_Year %in% c(1995:2016)) %>%
-  rename(OMR_Feb=OMR) %>% select(Calendar_Year,scenario,OMR_Feb)
+  filter(Cohort_Year %in% c(1995:2016)) %>%
+  rename(OMR_Feb=OMR) %>% select(Cohort_Year,scenario,OMR_Feb)
 
 #March OMR covariate
-data_OMR_Mar <- combined_data %>% mutate(Calendar_Year=year(Date),Month=month(Date)) %>% 
+data_OMR_Mar <- combined_data %>% mutate(Cohort_Year=ifelse(month(Date)<4,year(Date)-1,year(Date)),Month=month(Date)) %>% 
   #Filter March per Smith et al. 2021
   filter(Month %in% c(3)) %>% 
   #Filter year 1995-2016 for Delta Smelt LCM
-  filter(Calendar_Year %in% c(1995:2016)) %>%
-  rename(OMR_Mar=OMR) %>%  select(Calendar_Year,scenario,OMR_Mar)
+  filter(Cohort_Year %in% c(1995:2016)) %>%
+  rename(OMR_Mar=OMR) %>%  select(Cohort_Year,scenario,OMR_Mar)
 
 ##Merge datasets
-data_flowinput_LCM <- data_DeltaOutflow %>% left_join(data_OMR_Apr_May) %>% left_join(data_OMR_June) %>% left_join(data_OMR_Feb) %>%
+data_flowinput_LCM <- data_DeltaOutflow %>% left_join(data_OMR_Apr_May) %>% left_join(data_OMR_June) %>% left_join(data_OMR_Dec_Jan) %>%
+  left_join(data_OMR_Feb) %>%
   left_join(data_OMR_Mar)
 
 #Export data
-write.csv(data_flowinput_LCM,file.path(output_root,"FlowData_2022ROC_EffectsAnalysis_CalendarYear.csv"),row.names=F)
-write.csv(data_OMR_Dec_Jan,file.path(output_root,"FlowData_2022ROC_EffectsAnalysis_WaterYear.csv"),row.names=F)
+write.csv(data_flowinput_LCM,file.path(output_root,"FlowData_2022ROC_EffectsAnalysis_CohortYear.csv"),row.names=F)
