@@ -17,15 +17,23 @@ conflict_prefer("rename", "dplyr")
 EXP1_data <- read.csv(file.path(hydro_root,"EXP1_CalSim3_data.csv")) 
 EXP3_data <- read.csv(file.path(hydro_root,"EXP3_CalSim3_data.csv")) 
 NAA_data <- read.csv(file.path(hydro_root,"NAA_CalSim3_data.csv")) 
-Alt2_wTUCP_data <- read.csv(file.path(hydro_root,"Alt2_wTUCP_CalSim3_data.csv")) 
-Alt2_woTUCP_data <- read.csv(file.path(hydro_root,"Alt2_woTUCP_CalSim3_data.csv")) 
+Alt1_data <- read.csv(file.path(hydro_root,"Alt1_CalSim3_data.csv")) 
+Alt2v1woTUCP_data <- read.csv(file.path(hydro_root,"Alt2v1woTUCP_CalSim3_data.csv")) 
+Alt2v1wTUCP_data <- read.csv(file.path(hydro_root,"Alt2v1wTUCP_CalSim3_data.csv")) 
+Alt2v2noTUCP_data <- read.csv(file.path(hydro_root,"Alt2v2noTUCP_CalSim3_data.csv")) 
+Alt2v3noTUCP_data <- read.csv(file.path(hydro_root,"Alt2v3noTUCP_CalSim3_data.csv")) 
+Alt4_data <- read.csv(file.path(hydro_root,"Alt4_CalSim3_data.csv")) 
 
 # Combine X2 data
 x2_data <- NAA_data %>% select(Date,X2_current) %>% mutate(Scenario="NAA") %>%
   bind_rows((EXP1_data %>% select(Date,X2_current) %>% mutate(Scenario="EXP1"))) %>%
   bind_rows((EXP3_data %>% select(Date,X2_current) %>% mutate(Scenario="EXP3"))) %>%
-  bind_rows((Alt2_wTUCP_data %>% select(Date,X2_current) %>% mutate(Scenario="Alt2_wTUCP"))) %>%
-  bind_rows((Alt2_woTUCP_data %>% select(Date,X2_current) %>% mutate(Scenario="Alt2_woTUCP"))) 
+  bind_rows((Alt1_data %>% select(Date,X2_current) %>% mutate(Scenario="Alt1"))) %>%
+  bind_rows((Alt2v1woTUCP_data %>% select(Date,X2_current) %>% mutate(Scenario="Alt2v1woTUCP"))) %>%
+  bind_rows((Alt2v1wTUCP_data %>% select(Date,X2_current) %>% mutate(Scenario="Alt2v1wTUCP"))) %>%
+  bind_rows((Alt2v2noTUCP_data %>% select(Date,X2_current) %>% mutate(Scenario="Alt2v2noTUCP"))) %>%
+  bind_rows((Alt2v3noTUCP_data %>% select(Date,X2_current) %>% mutate(Scenario="Alt2v3noTUCP"))) %>%
+  bind_rows((Alt4_data %>% select(Date,X2_current) %>% mutate(Scenario="Alt4")))
 
 x2_data <- na.omit(x2_data) %>% rename(X2 = X2_current) %>% mutate(Month=month(Date))
 
