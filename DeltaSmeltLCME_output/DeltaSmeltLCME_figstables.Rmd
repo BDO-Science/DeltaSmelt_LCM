@@ -1,0 +1,93 @@
+---
+title: "Delta Smelt LCME output"
+author: "Brian Mahardja"
+date: "2023-09-18"
+output: word_document
+knit: (function(input, ...) {
+    rmarkdown::render(
+      input,
+      output_dir = "~/GitHub/DeltaSmelt_LCM/DeltaSmeltLCME_output"
+    )
+  })
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "~/GitHub/DeltaSmelt_LCM/DeltaSmeltLCME_output")
+
+options(scipen=999)
+
+```
+
+```{r packages, message=FALSE, warning=FALSE, echo=FALSE,error=FALSE}
+require(tidyverse)
+require(lubridate)
+require(readxl)
+require(scales)
+require(conflicted)
+require(knitr)
+conflict_prefer("filter", "dplyr")
+conflict_prefer("select", "dplyr")
+```
+
+```{r load data, warning=FALSE, echo=FALSE, messages=FALSE,error=FALSE}
+data_model <-read_xlsx("BoR Reinitiation LCME results_09-18-2023.xlsx", skip = 1) %>%
+  rename(Year = names(.)[1]) %>% filter(Year %in% c(1995:2014)) %>%
+# Remove base because Calsim =/= historical data
+  select(-base) 
+
+wy_type<- data.frame(Year=c(1995:2014),WY_Type=c("Wet","Wet","Wet","Wet","Wet","Above Normal","Dry","Dry","Above Normal","Below Normal","Above Normal","Wet","Dry","Critically Dry","Dry","Below Normal","Wet","Below Normal","Dry","Critically Dry")) %>%
+  mutate(wet_vs_dry= ifelse(WY_Type %in% c("Wet","Above Normal"), "Wet and Above Normal years","Below Normal, Dry, or Critically Dry years"))
+
+data_table <- data_model%>% mutate_at(vars(c(2:10)), list( ~round(., 2))) %>% mutate(Year=as.integer(Year)) %>% left_join(wy_type) %>% select(-wet_vs_dry) %>%
+  rename('Sacramento Valley Water Year Index'=WY_Type)
+
+data_fig <- data_model %>% gather("Alternatives","lambda",2:10) %>% mutate(Year=as.numeric(Year),Alternatives=as.factor(Alternatives))
+
+
+# Create table with caption
+knitr::kable(data_table , padding=0, caption="Table 1. Predicted population growth rate (lambda) for each cohort year by alternatives.")
+
+
+data_wy <- data_fig %>% left_join(wy_type) %>% 
+  group_by(wet_vs_dry,Alternatives) %>% summarise(geometric_mean_lambda=exp(mean(log(lambda)))) %>%
+  spread(Alternatives,geometric_mean_lambda) %>% rename(Category=wet_vs_dry)
+
+data_time <- data_fig %>% mutate(TimePeriod=ifelse(Year < 2005,"1995-2004","2005-2014")) %>% 
+  group_by(TimePeriod,Alternatives) %>% summarise(geometric_mean_lambda=exp(mean(log(lambda))))%>%
+  spread(Alternatives,geometric_mean_lambda) %>% rename(Category=TimePeriod)
+
+data_sum <- data_fig %>%
+  group_by(Alternatives) %>% summarise(geometric_mean_lambda=exp(mean(log(lambda)))) %>%
+  mutate(Category="Overall") %>% spread(Alternatives,geometric_mean_lambda)
+
+data_combine_sum <- bind_rows(data_sum,data_wy,data_time) %>% mutate_at(vars(c(2:10)), list( ~round(., 2)))
+
+# Create table with caption
+knitr::kable(data_combine_sum , padding=0, caption="Table 2. Geometric mean of population growth rate (lambda) for each alternative.") 
+
+```
+
+```{r plot, echo=FALSE, messages=FALSE, dpi=300, fig.width=6, fig.height=4}
+
+safe_colorblind_palette <- c("#88CCEE", "#CC6677", "#DDCC77", "#117733", "#332288", "#AA4499", 
+                             "#44AA99", "#999933", "#882255", "#661100", "#6699CC", "#888888")
+
+plot_lambda <- ggplot(data_fig) +  
+  geom_line(aes(x=Year, lambda, colour=Alternatives),linewidth=1) + 
+  theme_bw() +
+  scale_x_continuous(breaks = c(1995:2014))+
+  theme(plot.title=element_text(size=13), 
+                 axis.text.x=element_text(size=9, color="black",angle=45,hjust=1), 
+                 axis.text.y = element_text(size=8, color="black"), 
+                 axis.title.x = element_blank(),
+                 axis.title.y = element_text(size = 9, angle = 90),
+                 strip.text = element_text(size = 7),
+                 legend.position = "top") + 
+  ylab("Population Growth Rate")+
+  scale_colour_manual(values = safe_colorblind_palette,name="")+
+  guides(color = guide_legend(reverse = TRUE,nrow=3,byrow=TRUE))
+
+plot_lambda
+```
+
