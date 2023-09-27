@@ -22,6 +22,7 @@ Alt2v1woTUCP_data <- read.csv(file.path(hydro_root,"Alt2v1woTUCP_CalSim3_data.cs
 Alt2v1wTUCP_data <- read.csv(file.path(hydro_root,"Alt2v1wTUCP_CalSim3_data.csv")) 
 Alt2v2noTUCP_data <- read.csv(file.path(hydro_root,"Alt2v2noTUCP_CalSim3_data.csv")) 
 Alt2v3noTUCP_data <- read.csv(file.path(hydro_root,"Alt2v3noTUCP_CalSim3_data.csv")) 
+Alt3_data <- read.csv(file.path(hydro_root,"Alt3_CalSim3_data.csv")) 
 Alt4_data <- read.csv(file.path(hydro_root,"Alt4_CalSim3_data.csv")) 
 
 # Combine X2 data
@@ -33,6 +34,7 @@ x2_data <- NAA_data %>% select(Date,X2_current) %>% mutate(Scenario="NAA") %>%
   bind_rows((Alt2v1wTUCP_data %>% select(Date,X2_current) %>% mutate(Scenario="Alt2v1wTUCP"))) %>%
   bind_rows((Alt2v2noTUCP_data %>% select(Date,X2_current) %>% mutate(Scenario="Alt2v2noTUCP"))) %>%
   bind_rows((Alt2v3noTUCP_data %>% select(Date,X2_current) %>% mutate(Scenario="Alt2v3noTUCP"))) %>%
+  bind_rows((Alt3_data %>% select(Date,X2_current) %>% mutate(Scenario="Alt3"))) %>%
   bind_rows((Alt4_data %>% select(Date,X2_current) %>% mutate(Scenario="Alt4")))
 
 x2_data <- na.omit(x2_data) %>% rename(X2 = X2_current) %>% mutate(Month=month(Date))
