@@ -11,23 +11,30 @@ library(lubridate)
 library(sf)
 library(deltamapr)
 library(readxl)
+library(grid)
+library(gridExtra)
+library(ggpubr)
 
-
-IMBR_LCM_comparison <- ggplot()+
+IMBR_LCM_comparison1 <- ggplot()+
   geom_sf(data=WW_Delta,fill="cadetblue1", color="cadetblue1")+
   geom_sf(data=R_EDSM_Regions_1617P1,fill=NA,color="black",size=2)+
-  geom_sf(data=R_DSIBM,fill=NA, color="red")+
-  geom_sf_label(data=R_DSIBM, aes(label = SUBREGION),size=2,color="red",fill = alpha(c("white"),0.5))+
   geom_sf_label(data=R_EDSM_Regions_1617P1, aes(label = Region),size=2,color="black",fill = alpha(c("white"),0.5))+
-  theme_bw()+
+  theme_bw()+ coord_sf(xlim = c(-122.3, -121.10), ylim = c(37.65, 38.61),crs=4326)+
   theme(axis.title.x=element_blank(), 
-        axis.title.y=element_blank())
+        axis.title.y=element_blank())+ggtitle("LCME")
 
-IMBR_LCM_comparison
+IMBR_LCM_comparison2 <- ggplot()+
+  geom_sf(data=WW_Delta,fill="cadetblue1", color="cadetblue1")+
+  geom_sf(data=R_DSIBM,fill=NA, color="red")+
+  geom_sf_label(data=R_DSIBM, aes(label = SUBREGION),size=1.5,color="red",fill = alpha(c("white"),0.5))+
+  theme_bw()+ coord_sf(xlim = c(-122.3, -121.10), ylim = c(37.65, 38.61),crs=4326)+
+  theme(axis.title.x=element_blank(), 
+        axis.title.y=element_blank())+ggtitle("IBM")
+
 #Print out the map
-tiff(filename=file.path(zoop_root,"Figure_Map_compare_IBMR_LCM.tiff"), units="in",type="cairo", bg="white", height=7.5, 
-     width=9, res=300, compression="lzw")
-IMBR_LCM_comparison
+tiff(filename=file.path(zoop_root,"Figure_Map_compare_IBMR_LCM.tiff"), units="in",type="cairo", bg="white", height=8, 
+     width=6, res=300, compression="lzw")
+ggarrange(IMBR_LCM_comparison1,IMBR_LCM_comparison2, ncol=1, nrow=2)
 dev.off()
   
 # SW Suisun will be used to represent "Far West" region in the Delta Smelt LCM
