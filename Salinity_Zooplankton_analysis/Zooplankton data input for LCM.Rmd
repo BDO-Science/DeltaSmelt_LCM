@@ -197,8 +197,8 @@ zoop_data_LCM_raw <-read.csv("../Zooplankton_input_original/ZooMysid_74_19_df_me
 zoop_data_LCM <- zoop_data_LCM_raw %>% filter(Year %in% c(1995:2017))
 
 #Find maximum value for each data
-zoop_data_LCM_max <- zoop_data_LCM_raw %>% pivot_longer(cols=ends_with("BPUV"), names_to = "Taxa", values_to = "BPUV") %>%
-  group_by(Taxa) %>% summarise(BPUV_max=max(BPUV,na.rm=T))
+zoop_data_LCM_max <- zoop_data_LCM_raw %>% filter(Year>=1995) %>% pivot_longer(cols=ends_with("BPUV"), names_to = "Taxa", values_to = "BPUV") %>%
+  group_by(Taxa,Region) %>% summarise(BPUV_max=max(BPUV,na.rm=T))
 
 #Create function to expand data frame based on a column
 expand.grid.df <- function(...) Reduce(function(...) merge(..., by=NULL), list(...))
