@@ -26,16 +26,28 @@ require(readxl)
 require(scales)
 require(conflicted)
 require(knitr)
+require(grid)
+require(gridExtra)
+require(lattice)
+require(ggpubr)
 conflict_prefer("filter", "dplyr")
 conflict_prefer("select", "dplyr")
 ```
 
 ```{r load data, warning=FALSE, echo=FALSE, messages=FALSE,error=FALSE}
-data_model <-read_xlsx("BoR Reinitiation LCME results_09-28-2023.xlsx", skip = 1) %>% select(c(1:12)) %>%
-  rename(Year = names(.)[1],Historical=base) %>% filter(Year %in% c(1995:2015)) 
+data_model <-read_xlsx("BoR Reinitiation LCME results_11-06-2023.xlsx", skip = 1, sheet="CalSim flow actions") %>% select(c(1:12)) %>%
+  rename(Year = names(.)[1],Empirical=base) %>% filter(Year %in% c(1995:2015)) %>%
+  rename(Alt1 = Alt1...3,
+         Alt2v1wTUCP = Alt2v1wTUCP...4,
+         Alt2v1woTUCP =Alt2v1woTUCP...5,
+         Alt2v2noTUCP =Alt2v2noTUCP...6,
+         Alt2v3noTUCP = Alt2v3noTUCP...7,
+         Alt3=Alt3...8,
+         Alt4=Alt4...9,
+         EXP1=EXP1...10,
+         EXP3=EXP3...11)
 
-
-wy_type<- data.frame(Year=c(1995:2015),WY_Type=c("Wet","Wet","Wet","Wet","Wet","Above Normal","Dry","Dry","Above Normal","Below Normal","Above Normal","Wet","Dry","Critically Dry","Dry","Below Normal","Wet","Below Normal","Dry","Critically Dry","Critically Dry")) %>%
+wy_type<- data.frame(Year=c(1995:2016),WY_Type=c("Wet","Wet","Wet","Wet","Wet","Above Normal","Dry","Dry","Above Normal","Below Normal","Above Normal","Wet","Dry","Critically Dry","Dry","Below Normal","Wet","Below Normal","Dry","Critically Dry","Critically Dry","Below Normal")) %>%
   mutate(wet_vs_dry= ifelse(WY_Type %in% c("Wet","Above Normal"), "Wet and Above Normal years","Below Normal, Dry, or Critically Dry years"))
 
 data_table <- data_model%>% mutate_at(vars(c(2:12)), list( ~round(., 2))) %>% mutate(Year=as.integer(Year)) %>% left_join(wy_type) %>% select(-wet_vs_dry) %>%
@@ -67,15 +79,14 @@ knitr::kable(data_combine_sum , padding=0, caption="Table 4. Geometric mean of p
 
 ```
 
-```{r barplot, echo=FALSE, messages=FALSE, dpi=300, fig.width=6, fig.height=4}
+```{r barplot_sum, echo=FALSE, messages=FALSE, dpi=300, fig.width=6, fig.height=8}
 
 safe_colorblind_palette <- c("#88CCEE", "#CC6677", "#DDCC77", "#117733", "#332288", "#AA4499", 
-                             "#44AA99", "#999933", "#882255", "red", "#6699CC", "#888888")
+                             "#44AA99", "red", "#882255", "#999933", "#6699CC", "#888888")
 
 data_bar <- data_combine_sum %>% gather("Alternatives","lambda",2:12) %>%
   filter(Category=="1995-2015") %>% mutate(Alternatives=as.factor(Alternatives))
 
-str(data_bar)
 
 plot_bar <- ggplot(data_bar,aes(x=Alternatives,y=lambda,fill=Alternatives)) +  
   geom_col() +
@@ -90,13 +101,29 @@ plot_bar <- ggplot(data_bar,aes(x=Alternatives,y=lambda,fill=Alternatives)) +
   scale_fill_manual(values = safe_colorblind_palette,name="")+
   ylab("1995-2015 Geometric Mean of Population Growth Rate")
 
-plot_bar
+
+data_sum_2 <- data_sum %>% gather("Alternatives","lambda",2:12) %>% mutate(lambda_relative = (lambda-0.9811579)/0.9811579) %>% filter(Alternatives!="NAA")
+
+plot_bar2 <- ggplot(data_sum_2,aes(x=Alternatives,y=lambda_relative,fill=Alternatives)) +  
+  geom_col() +
+  theme_bw() +
+  theme(plot.title=element_text(size=13), 
+                 axis.text.x=element_text(size=9, color="black",angle=45,hjust=1), 
+                 axis.text.y = element_text(size=8, color="black"), 
+                 axis.title.x = element_blank(),
+                 axis.title.y = element_text(size = 8, angle = 90),
+                 strip.text = element_text(size = 7),
+                 legend.position = "none") + guides(fill="none") +  
+  scale_fill_manual(values = safe_colorblind_palette,name="")+
+  ylab("Mean porportional change in lambda vs NAA")
+
+grid.arrange(plot_bar, plot_bar2, nrow = 2)
+
+
 ```
-Figure 10. Bar plot demonstrating the geometric mean of population growth rate (lambda) from 1995 to 2015 for the various alternatives (as seen in Table 4). 
+Figure 12. Top: Bar plot demonstrating the geometric mean of population growth rate (lambda) from 1995 to 2015 for the various alternatives as seen in Table 4. Bottom: Bar plot demonstrating the relative difference in geometric mean of population growth rate (1995-2015) for each alternative compared to the no action alternative 
 
-
-```{r plot, echo=FALSE, messages=FALSE, dpi=300, fig.width=6, fig.height=4}
-
+```{r lambda plot, echo=FALSE, messages=FALSE, dpi=300, fig.width=6, fig.height=8}
 
 plot_lambda <- ggplot(data_fig) +  
   geom_line(aes(x=Year, lambda, colour=Alternatives),linewidth=1) + 
@@ -113,18 +140,15 @@ plot_lambda <- ggplot(data_fig) +
   scale_colour_manual(values = safe_colorblind_palette,name="")+
   guides(color = guide_legend(reverse = TRUE,nrow=3,byrow=TRUE))
 
-plot_lambda
-```
-
-Figure 11. Line plot of population growth rate (lambda) across alternatives (as seen in Table 3). 
-
-```{r naaplot, echo=FALSE, messages=FALSE, dpi=300, fig.width=6, fig.height=4}
 data_naa <- data_model %>% select(Year, NAA) %>% mutate(Year=as.numeric(Year))
 
-data_fig_percent <- data_model %>% select(-Historical) %>% gather("Alternatives","lambda",2:11) %>%
+data_fig_percent <- data_model %>% select(-Empirical) %>% gather("Alternatives","lambda",2:11) %>%
   mutate(Year=as.numeric(Year),Alternatives=as.factor(Alternatives)) %>% left_join(data_naa) %>%
   ##Divide by NAA
   mutate(lambda_relative_to_NAA = lambda/NAA*100)
+
+safe_colorblind_palette2 <- c("#88CCEE", "#CC6677", "#DDCC77", "#117733", "#332288", "#AA4499", 
+                             "#44AA99",  "#882255","#999933", "red", "#6699CC", "#888888")
 
 plot_relative <- ggplot(data_fig_percent) +  
   geom_line(aes(x=Year, lambda_relative_to_NAA, colour=Alternatives),linewidth=1) + 
@@ -138,15 +162,16 @@ plot_relative <- ggplot(data_fig_percent) +
                  strip.text = element_text(size = 7),
                  legend.position = "top") + 
   ylab("% change in population growth rate from NAA")+
-  scale_colour_manual(values = safe_colorblind_palette,name="")+
+  scale_colour_manual(values = safe_colorblind_palette2,name="")+
   guides(color = guide_legend(reverse = TRUE,nrow=3,byrow=TRUE))
 
-plot_relative
+grid.arrange(plot_lambda, plot_relative, nrow = 2)
+
 ```
-Figure 12. Line plot showing % change calculated as the estimated population growth rate for a given alternative divided by estimated population growth rate for NAA (no action alternative)
 
+Figure 11. Top: Line plot of population growth rate (lambda) across alternatives as seen in Table 3. Bottom: Line plot showing % change calculated as lambda rate for a given alternative divided by estimated population growth rate for NAA (no action alternative). Note the color change for NAA in the bottom figure.
 
-```{r data input, echo=FALSE, messages=FALSE, dpi=300, fig.width=6, fig.height=4}
+```{r data input, echo=FALSE, messages=FALSE, dpi=300, fig.width=9, fig.height=13}
 #Code to check data input and compare with actual data
 data_input_ROC <- read.csv(file.path("../Salinity_Zooplankton_analysis/FlowZoopData_2022ROC_EffectsAnalysis_CohortYear.csv")) %>%
   # Change outflow values to total volume in acre foot
@@ -156,10 +181,10 @@ data_input_ROC <- read.csv(file.path("../Salinity_Zooplankton_analysis/FlowZoopD
 data_lcme_original <-read_xlsx(file.path("../Zooplankton_input_original/LCME covariates.xlsx"),sheet="Best model covariates")
 
 data_lcme_subset <- data_lcme_original %>% select(any_of(colnames(data_input_ROC))) %>% 
-  mutate(scenario="Historical")
+  mutate(scenario="Empirical")
   
 data_input_ROC<- data_input_ROC%>%
-  bind_rows(data_lcme_subset) %>% mutate(scenario=as.factor(scenario),linesize=ifelse(scenario=="Historical",1.5,1))
+  bind_rows(data_lcme_subset) %>% mutate(scenario=as.factor(scenario),linesize=ifelse(scenario=="Empirical",1.5,1))
 
 #Write a function to produce plot
 datainput_plot <- function(df, titletext,ytitletext,xtitletext,parameter) {
@@ -178,56 +203,138 @@ ggplot(data=df) + geom_line(aes(x=Cohort_Year,y=parameter,group=scenario, colour
   guides(color = guide_legend(reverse = TRUE,nrow=3,byrow=TRUE),linewidth="none")
 }
 
- # scale_linewidth_manual(values = c(Alt1=1,Alt2v1woTUCP=1,Alt2v1wTUCP=1,Alt2v2noTUCP=1,Alt2v3noTUCP=1,Alt3=1,Alt4=1,EXP1=1,EXP3=1,Historical=2,NAA=1)) +
+ # scale_linewidth_manual(values = c(Alt1=1,Alt2v1woTUCP=1,Alt2v1wTUCP=1,Alt2v2noTUCP=1,Alt2v3noTUCP=1,Alt3=1,Alt4=1,EXP1=1,EXP3=1,Empirical=2,NAA=1)) +
  
 
-plot1<-datainput_plot(df=data_input_ROC, titletext="",ytitletext = "Sum of Delta Outflow (June-August) in acre-foot",xtitletext="Cohort Year",parameter=data_input_ROC$Outflow_Jun0Aug0)
-plot1
+plot1<-datainput_plot(df=data_input_ROC, titletext="",ytitletext = "Sum of Delta Outflow (June-August) in acre-foot",xtitletext="Cohort Year",parameter=data_input_ROC$Outflow_Jun0Aug0)+ theme(legend.position = "none")
+
+plot2<-datainput_plot(df=data_input_ROC, titletext="",ytitletext = "February Food Biomass per Volume Index",xtitletext="Cohort Year",parameter=data_input_ROC$ACM_BPUV_Feb1Feb1)+ theme(legend.position = "none")
+
+plot3<-datainput_plot(df=data_input_ROC, titletext="",ytitletext = "March Food Biomass per Volume Index",xtitletext="Cohort Year",parameter=data_input_ROC$ACM_BPUV_Mar1Mar1)+ theme(legend.position = "none") +
+      theme(axis.title.x = element_text(size = 11)) + xlab("Cohort Year")
+
+# Add legend
+plot8<-datainput_plot(df=data_input_ROC, titletext="",ytitletext = "March daily average OMR in cfs",xtitletext="Cohort Year",parameter=data_input_ROC$OMR_Mar) +
+  guides(color = guide_legend(reverse = TRUE,nrow=5,byrow=TRUE))
+
+leg <- get_legend(plot8)
+
+grid.arrange(plot1, plot2, plot3,as_ggplot(leg), ncol = 1)
+```
+Figure 3. Outflow and prey metric data based on CalSim3 data and salinity-zooplankton model relative to the original dataset used to build the Delta Smelt LCME (labeled as "Empirical"): June-August sum of Delta outflow, February and March prey metric (biomass per volume) data composed of copepod adults, cladocerans, and mysids 
+
+```{r plot 4,echo=FALSE, messages=FALSE, dpi=300, fig.width=8, fig.height=11}
+plot4<-datainput_plot(df=data_input_ROC, titletext="",ytitletext = "April-May daily average OMR in cfs",xtitletext="Cohort Year",parameter=data_input_ROC$OMR_AprMar) + theme(legend.position = "none")
+
+plot5<-datainput_plot(df=data_input_ROC, titletext="",ytitletext = "June daily average OMR in cfs",xtitletext="Cohort Year",parameter=data_input_ROC$OMR_Jun) + theme(legend.position = "none")
+
+plot6<-datainput_plot(df=data_input_ROC, titletext="",ytitletext = "December-January daily average OMR in cfs",xtitletext="Cohort Year",parameter=data_input_ROC$OMR_DecJan) + theme(legend.position = "none")
+
+plot7<-datainput_plot(df=data_input_ROC, titletext="",ytitletext = "February daily average OMR in cfs",xtitletext="Cohort Year",parameter=data_input_ROC$OMR_Feb) + theme(legend.position = "none")
+
+
+
+plot8<-datainput_plot(df=data_input_ROC, titletext="",ytitletext = "March daily average OMR in cfs",xtitletext="Cohort Year",parameter=data_input_ROC$OMR_Mar) +  theme(
+                 legend.position = "none")
+
+grid.arrange(plot4, plot5, plot6, plot7, plot8,as_ggplot(leg), ncol = 2)
 
 ```
-Figure 3. June-August sum of Delta outflow data produced from CalSim3 relative to the original dataset used to build the Delta Smelt LCME (labeled as "Historical")
 
-```{r plot 2,echo=FALSE, messages=FALSE, dpi=300, fig.width=6, fig.height=4}
+Figure 4. Daily average OMR flow data produced from CalSim3 relative to the original dataset used to build the Delta Smelt LCME (labeled as "Empirical")
 
-plot2<-datainput_plot(df=data_input_ROC, titletext="",ytitletext = "February Food Biomass per Volume Index",xtitletext="Cohort Year",parameter=data_input_ROC$ACM_BPUV_Feb1Feb1)
-plot2
+
+```{r boxplot,echo=FALSE, messages=FALSE, dpi=300, fig.width=6, fig.height=8}
+data_input_ROC_reconfig <- data_input_ROC %>% select(-linesize) %>% gather("Parameter","Value",3:10)
+
+
+#Create figure
+plot_parameter <- ggplot2::ggplot(data=data_input_ROC_reconfig, ggplot2::aes(x=scenario, y=Value))+ facet_wrap(~ Parameter, ncol=2, scales="free")+
+  ggplot2::theme_bw()+
+  geom_boxplot(outlier.colour="black", outlier.shape=16,
+             outlier.size=2, notch=FALSE)+
+  ggplot2::theme(plot.title=element_text(size=9), 
+                 axis.text.x=element_text(size=9, color="black",angle=45,hjust=1), 
+                 axis.text.y = element_text(size=8, color="black"), 
+                 axis.title.x = element_blank(), 
+                 axis.title.y = element_text(size = 9, angle = 90),
+                 strip.text = element_text(size = 7),
+                 strip.background = element_rect(size=0.3))+
+  ggplot2::ylab("Values")
+plot_parameter
+
 ```
-Figure 4. February prey metric (biomass per volume) data composed of copepod adults, cladocerans, and mysids based on CalSim3 data and salinity-zooplankton model relative to the original dataset used to build the Delta Smelt LCME (labeled as "Historical")
+```{r barplot_param,echo=FALSE, messages=FALSE, dpi=300, fig.width=6, fig.height=8}
+data_input_ROC_reconfig_sum <- data_input_ROC_reconfig %>% group_by(scenario,Parameter) %>% summarise(Value=mean(Value))
 
-```{r plot 3,echo=FALSE, messages=FALSE, dpi=300, fig.width=6, fig.height=4}
-plot3<-datainput_plot(df=data_input_ROC, titletext="",ytitletext = "March Food Biomass per Volume Index",xtitletext="Cohort Year",parameter=data_input_ROC$ACM_BPUV_Mar1Mar1)
-plot3
+
+#Create figure
+plot_bar_param <- ggplot2::ggplot(data=data_input_ROC_reconfig_sum, ggplot2::aes(x=scenario, y=Value, fill=scenario))+ facet_wrap(~ Parameter, ncol=2, scales="free")+
+  ggplot2::theme_bw()+
+  geom_col() +
+  ggplot2::theme(plot.title=element_text(size=9), 
+                 axis.text.x=element_text(size=9, color="black",angle=45,hjust=1), 
+                 axis.text.y = element_text(size=8, color="black"), 
+                 axis.title.x = element_blank(), 
+                 axis.title.y = element_text(size = 9, angle = 90),
+                 strip.text = element_text(size = 7),
+                 strip.background = element_rect(size=0.3))+
+  ggplot2::ylab("Values")+ scale_fill_manual(values = safe_colorblind_palette,name="")
+plot_bar_param
+
+
 ```
 
-Figure 5. March prey metric (biomass per volume) data composed of copepod adults, cladocerans, and mysids based on CalSim3 data and salinity-zooplankton model relative to the original dataset used to build the Delta Smelt LCME (labeled as "Historical")
 
-```{r plot 4,echo=FALSE, messages=FALSE, dpi=300, fig.width=6, fig.height=4}
-plot4<-datainput_plot(df=data_input_ROC, titletext="",ytitletext = "April-May daily average OMR in cfs",xtitletext="Cohort Year",parameter=data_input_ROC$OMR_AprMar)
-plot4
+```{r barplot_wet,echo=FALSE, messages=FALSE, dpi=300, fig.width=6, fig.height=8}
+data_input_table <- data_input_ROC %>% left_join(wy_type %>% rename(Cohort_Year=Year))  %>% 
+  select(-Cohort_Year,-linesize,-WY_Type,-wet_vs_dry) %>%
+  group_by(scenario) %>% summarise_each(funs(mean))
+
+data_input_table_wy <- data_input_ROC %>% left_join(wy_type %>% rename(Cohort_Year=Year))  %>% 
+  select(-Cohort_Year,-linesize,-WY_Type) %>%
+  group_by(scenario,wet_vs_dry) %>% summarise_each(funs(mean))
+
+data_input_barplot_wet<- data_input_table_wy %>% filter(wet_vs_dry=="Wet and Above Normal years") %>%
+  gather("Parameter","Value",3:10)
+
+#Create figure
+plot_bar_param_wet <- ggplot2::ggplot(data=data_input_barplot_wet, ggplot2::aes(x=scenario, y=Value, fill=scenario))+ facet_wrap(~ Parameter, ncol=2, scales="free")+
+  ggplot2::theme_bw()+
+  geom_col() +
+  ggplot2::theme(plot.title=element_text(size=9), 
+                 axis.text.x=element_text(size=9, color="black",angle=45,hjust=1), 
+                 axis.text.y = element_text(size=8, color="black"), 
+                 axis.title.x = element_blank(), 
+                 axis.title.y = element_text(size = 9, angle = 90),
+                 strip.text = element_text(size = 7),
+                 strip.background = element_rect(size=0.3))+
+  ggplot2::ylab("Values")+ scale_fill_manual(values = safe_colorblind_palette,name="")
+plot_bar_param_wet
+
+
+```
+Figure Y1. Mean value of variables used in the LCME for Wet and Above Normal year types. Note that cohort year was matched with the water year that the cohort was born in (e.g., cohort year 1995 = water year 1995).
+
+```{r barplot_dry,echo=FALSE, messages=FALSE, dpi=300, fig.width=6, fig.height=8}
+
+data_input_barplot_dry<- data_input_table_wy %>% filter(wet_vs_dry=="Below Normal, Dry, or Critically Dry years") %>%
+  gather("Parameter","Value",3:10)
+
+#Create figure
+plot_bar_param_dry <- ggplot2::ggplot(data=data_input_barplot_dry, ggplot2::aes(x=scenario, y=Value, fill=scenario))+ facet_wrap(~ Parameter, ncol=2, scales="free")+
+  ggplot2::theme_bw()+
+  geom_col() +
+  ggplot2::theme(plot.title=element_text(size=9), 
+                 axis.text.x=element_text(size=9, color="black",angle=45,hjust=1), 
+                 axis.text.y = element_text(size=8, color="black"), 
+                 axis.title.x = element_blank(), 
+                 axis.title.y = element_text(size = 9, angle = 90),
+                 strip.text = element_text(size = 7),
+                 strip.background = element_rect(size=0.3))+
+  ggplot2::ylab("Values")+ scale_fill_manual(values = safe_colorblind_palette,name="")
+plot_bar_param_dry
+
 ```
 
-Figure 6. April-May daily average OMR flow data produced from CalSim3 relative to the original dataset used to build the Delta Smelt LCME (labeled as "Historical")
-
-```{r plot 5,echo=FALSE, messages=FALSE, dpi=300, fig.width=6, fig.height=4}
-plot5<-datainput_plot(df=data_input_ROC, titletext="",ytitletext = "April-May daily average OMR in cfs",xtitletext="Cohort Year",parameter=data_input_ROC$OMR_Jun)
-plot5
-```
-Figure 7. June daily average OMR flow data produced from CalSim3 relative to the original dataset used to build the Delta Smelt LCME (labeled as "Historical")
-
-```{r plot 6,echo=FALSE, messages=FALSE, dpi=300, fig.width=6, fig.height=4}
-plot6<-datainput_plot(df=data_input_ROC, titletext="",ytitletext = "December-January daily average OMR in cfs",xtitletext="Cohort Year",parameter=data_input_ROC$OMR_DecJan)
-plot6
-```
-Figure 8. December-January daily average OMR flow data produced from CalSim3 relative to the original dataset used to build the Delta Smelt LCME (labeled as "Historical")
-
-```{r plot 7,echo=FALSE, messages=FALSE, dpi=300, fig.width=6, fig.height=4}
-plot7<-datainput_plot(df=data_input_ROC, titletext="",ytitletext = "February daily average OMR in cfs",xtitletext="Cohort Year",parameter=data_input_ROC$OMR_Feb)
-plot7
-```
-Figure 9. February daily average OMR flow data produced from CalSim3 relative to the original dataset used to build the Delta Smelt LCME (labeled as "Historical")
-
-```{r plot 8,echo=FALSE, messages=FALSE, dpi=300, fig.width=6, fig.height=4}
-plot8<-datainput_plot(df=data_input_ROC, titletext="",ytitletext = "March daily average OMR in cfs",xtitletext="Cohort Year",parameter=data_input_ROC$OMR_Mar)
-plot8
-```
-Figure 10. March daily average OMR flow data produced from CalSim3 relative to the original dataset used to build the Delta Smelt LCME (labeled as "Historical")
+Figure Y2. Mean value of variables used in the LCME for Below Normal, Dry, or Critically Dry year  Note that cohort year was matched with the water year that the cohort was born in (e.g., cohort year 1995 = water year 1995).
