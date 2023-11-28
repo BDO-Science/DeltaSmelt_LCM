@@ -245,11 +245,19 @@ Figure 4. Daily average OMR flow data produced from CalSim3 relative to the orig
 
 
 ```{r boxplot,echo=FALSE, messages=FALSE, dpi=300, fig.width=6, fig.height=8}
-data_input_ROC_reconfig <- data_input_ROC %>% select(-linesize) %>% gather("Parameter","Value",3:10)
+data_input_ROC_reconfig <- data_input_ROC %>% select(-linesize) %>% gather("Parameter","Value",3:10) %>%
+  mutate(Parameter_name = case_when(Parameter == "ACM_BPUV_Feb1Feb1" ~ "February Food Biomass per Volume Index" ,
+                                    Parameter == "ACM_BPUV_Mar1Mar1" ~ "March Food Biomass per Volume Index" ,
+                                    Parameter == "Outflow_Jun0Aug0" ~ "Sum of Delta Outflow (June-August)" ,
+                                    Parameter == "OMR_AprMar" ~  "April-May daily average OMR",
+                                    Parameter == "OMR_Jun" ~  "June daily average OMR",
+                                    Parameter == "OMR_DecJan" ~ "December-January daily average OMR",
+                                    Parameter == "OMR_Feb" ~  "February daily average OMR",
+                                    Parameter == "OMR_Mar" ~ "March daily average OMR" ))
 
 
 #Create figure
-plot_parameter <- ggplot2::ggplot(data=data_input_ROC_reconfig, ggplot2::aes(x=scenario, y=Value))+ facet_wrap(~ Parameter, ncol=2, scales="free")+
+plot_parameter <- ggplot2::ggplot(data=data_input_ROC_reconfig, ggplot2::aes(x=scenario, y=Value))+ facet_wrap(~ Parameter_name, ncol=2, scales="free")+
   ggplot2::theme_bw()+
   geom_boxplot(outlier.colour="black", outlier.shape=16,
              outlier.size=2, notch=FALSE)+
@@ -265,11 +273,11 @@ plot_parameter
 
 ```
 ```{r barplot_param,echo=FALSE, messages=FALSE, dpi=300, fig.width=6, fig.height=8}
-data_input_ROC_reconfig_sum <- data_input_ROC_reconfig %>% group_by(scenario,Parameter) %>% summarise(Value=mean(Value))
+data_input_ROC_reconfig_sum <- data_input_ROC_reconfig %>% group_by(scenario,Parameter,Parameter_name) %>% summarise(Value=mean(Value))
 
 
 #Create figure
-plot_bar_param <- ggplot2::ggplot(data=data_input_ROC_reconfig_sum, ggplot2::aes(x=scenario, y=Value, fill=scenario))+ facet_wrap(~ Parameter, ncol=2, scales="free")+
+plot_bar_param <- ggplot2::ggplot(data=data_input_ROC_reconfig_sum, ggplot2::aes(x=scenario, y=Value, fill=scenario))+ facet_wrap(~ Parameter_name, ncol=2, scales="free")+
   ggplot2::theme_bw()+
   geom_col() +
   ggplot2::theme(plot.title=element_text(size=9), 
@@ -296,10 +304,18 @@ data_input_table_wy <- data_input_ROC %>% left_join(wy_type %>% rename(Cohort_Ye
   group_by(scenario,wet_vs_dry) %>% summarise_each(funs(mean))
 
 data_input_barplot_wet<- data_input_table_wy %>% filter(wet_vs_dry=="Wet and Above Normal years") %>%
-  gather("Parameter","Value",3:10)
+  gather("Parameter","Value",3:10) %>%
+  mutate(Parameter_name = case_when(Parameter == "ACM_BPUV_Feb1Feb1" ~ "February Food Biomass " ,
+                                    Parameter == "ACM_BPUV_Mar1Mar1" ~ "March Food Biomass" ,
+                                    Parameter == "Outflow_Jun0Aug0" ~ "June-August Delta Outflow" ,
+                                    Parameter == "OMR_AprMar" ~  "April-May OMR",
+                                    Parameter == "OMR_Jun" ~  "June OMR",
+                                    Parameter == "OMR_DecJan" ~ "December-January OMR",
+                                    Parameter == "OMR_Feb" ~  "February OMR",
+                                    Parameter == "OMR_Mar" ~ "March OMR" ))
 
 #Create figure
-plot_bar_param_wet <- ggplot2::ggplot(data=data_input_barplot_wet, ggplot2::aes(x=scenario, y=Value, fill=scenario))+ facet_wrap(~ Parameter, ncol=2, scales="free")+
+plot_bar_param_wet <- ggplot2::ggplot(data=data_input_barplot_wet, ggplot2::aes(x=scenario, y=Value, fill=scenario))+ facet_wrap(~ Parameter_name, ncol=2, scales="free")+
   ggplot2::theme_bw()+
   geom_col() +
   ggplot2::theme(plot.title=element_text(size=9), 
@@ -319,10 +335,18 @@ Figure Y1. Mean value of variables used in the LCME for Wet and Above Normal yea
 ```{r barplot_dry,echo=FALSE, messages=FALSE, dpi=300, fig.width=6, fig.height=8}
 
 data_input_barplot_dry<- data_input_table_wy %>% filter(wet_vs_dry=="Below Normal, Dry, or Critically Dry years") %>%
-  gather("Parameter","Value",3:10)
+  gather("Parameter","Value",3:10) %>%
+  mutate(Parameter_name = case_when(Parameter == "ACM_BPUV_Feb1Feb1" ~ "February Food Biomass " ,
+                                    Parameter == "ACM_BPUV_Mar1Mar1" ~ "March Food Biomass" ,
+                                    Parameter == "Outflow_Jun0Aug0" ~ "June-August Delta Outflow" ,
+                                    Parameter == "OMR_AprMar" ~  "April-May OMR",
+                                    Parameter == "OMR_Jun" ~  "June OMR",
+                                    Parameter == "OMR_DecJan" ~ "December-January OMR",
+                                    Parameter == "OMR_Feb" ~  "February OMR",
+                                    Parameter == "OMR_Mar" ~ "March OMR" ))
 
 #Create figure
-plot_bar_param_dry <- ggplot2::ggplot(data=data_input_barplot_dry, ggplot2::aes(x=scenario, y=Value, fill=scenario))+ facet_wrap(~ Parameter, ncol=2, scales="free")+
+plot_bar_param_dry <- ggplot2::ggplot(data=data_input_barplot_dry, ggplot2::aes(x=scenario, y=Value, fill=scenario))+ facet_wrap(~ Parameter_name, ncol=2, scales="free")+
   ggplot2::theme_bw()+
   geom_col() +
   ggplot2::theme(plot.title=element_text(size=9), 
