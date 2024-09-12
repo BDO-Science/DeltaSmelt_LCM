@@ -84,7 +84,7 @@ x2_data_expanded <- x2_data_expanded %>% mutate(X2_original=X2, X2=(X2-mean(X2.s
 
 
 # Use the CSAMP X2-Salinity model to convert CalSim3 X2 values to salinity
-x2_data_expanded$salinity<-predict(salX2mod,x2_data_expanded)
+x2_data_expanded$salinity<-predict(salX2mod,x2_data_expanded, type="response")
 
 # Ensure that there will be no negative salinity values and use the minimum value in Sam's conversion table
 x2_data_expanded$salinity <- ifelse(x2_data_expanded$salinity<0.1,0.1,x2_data_expanded$salinity)

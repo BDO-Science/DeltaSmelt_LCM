@@ -1,7 +1,7 @@
 ---
 title: "Expected zooplankton biomass change according to salinity"
 author: "Brian Mahardja"
-date: "2023-02-23"
+date: "2024-09-10"
 output: word_document
 knit: (function(input, ...) {
     rmarkdown::render(
@@ -45,7 +45,7 @@ conflict_prefer("select", "dplyr")
 # Load and wrangle data
 
 ```{r main zoop data}
-zoop_data<-Zoopsynther(Data_type="Community", Sources=c("EMP", "STN", "20mm", "FMWT"), Time_consistency = TRUE)
+zoop_data<-Zoopsynther(Data_type="Community", Sources=c("EMP", "STN", "20mm", "FMWT"), Time_consistency = FALSE)
 
 ```
 
@@ -61,7 +61,7 @@ zoop_mass_conversions<-read_excel("Biomass conversions.xlsx", sheet="Micro and M
 
 Read in zoop groupings
 ```{r}
-zoop_groups<-read_csv("zoopcrosswalk2.csv", col_types=cols_only(Taxlifestage="c", IBMR="c"))%>%
+zoop_groups<-read_csv("zoopcrosswalk3.csv", col_types=cols_only(Taxlifestage="c", IBMR="c"))%>%
   distinct()
 ```
 

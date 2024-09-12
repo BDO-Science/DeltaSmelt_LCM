@@ -246,7 +246,7 @@ zoop_flow_data_LCM <- zoop_data_feb_mar_ACM %>% ungroup() %>% filter(zoop_model_
   left_join(read.csv("../Hydro model output/FlowData_2022ROC_EffectsAnalysis_CohortYear.csv"))
 
 #Export the final flow and zoop dataset
-write.csv(zoop_flow_data_LCM, file="FlowZoopData_2022ROC_EffectsAnalysis_CohortYear.csv", row.names=F)
+write.csv(zoop_flow_data_LCM, file="FlowZoopData_2022ROC_EffectsAnalysis_CohortYear_2024-09-05.csv", row.names=F)
 
 
 ```
