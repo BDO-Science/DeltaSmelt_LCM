@@ -1,7 +1,7 @@
 ---
 title: "Delta Smelt LCME output"
 author: "Brian Mahardja"
-date: "2023-09-18"
+date: "2024-09-25"
 output: word_document
 knit: (function(input, ...) {
     rmarkdown::render(
@@ -35,13 +35,13 @@ conflict_prefer("select", "dplyr")
 ```
 
 ```{r load data, warning=FALSE, echo=FALSE, messages=FALSE,error=FALSE}
-data_model <-read_xlsx("BoR Reinitiation LCME results_11-06-2023.xlsx", skip = 1, sheet="CalSim flow actions") %>% select(c(1:12)) %>%
+data_model <-read_xlsx("BoR Reinitiation LCME results_09-26-2024.xlsx", skip = 1, sheet="CalSim flow actions") %>% select(c(1:12)) %>%
   rename(Year = names(.)[1],Empirical=base) %>% filter(Year %in% c(1995:2015)) %>%
   rename(Alt1 = Alt1...3,
-         Alt2v1wTUCP = Alt2v1wTUCP...4,
-         Alt2v1woTUCP =Alt2v1woTUCP...5,
-         Alt2v2noTUCP =Alt2v2noTUCP...6,
-         Alt2v3noTUCP = Alt2v3noTUCP...7,
+         Alt2wTUCPwoVA = Alt2v1wTUCP...4,
+         Alt2woTUCPwoVA =Alt2v1woTUCP...5,
+         Alt2woTUCPDeltaVA =Alt2v2noTUCP...6,
+         Alt2woTUCPAllVA = Alt2v3noTUCP...7,
          Alt3=Alt3...8,
          Alt4=Alt4...9,
          EXP1=EXP1...10,
@@ -54,7 +54,6 @@ data_table <- data_model%>% mutate_at(vars(c(2:12)), list( ~round(., 2))) %>% mu
   rename('Sacramento Valley Water Year Index'=WY_Type)
 
 data_fig <- data_model %>% gather("Alternatives","lambda",2:12) %>% mutate(Year=as.numeric(Year),Alternatives=as.factor(Alternatives))
-
 
 # Create table with caption
 knitr::kable(data_table , padding=0, caption="Table 3. Predicted population growth rate (lambda) for each cohort year by alternatives.")
@@ -96,7 +95,7 @@ plot_bar <- ggplot(data_bar,aes(x=Alternatives,y=lambda,fill=Alternatives)) +
                  axis.text.y = element_text(size=8, color="black"), 
                  axis.title.x = element_blank(),
                  axis.title.y = element_text(size = 8, angle = 90),
-                 strip.text = element_text(size = 7),
+                 strip.text = element_text(size = 7),legend.text=element_text(size=6),
                  legend.position = "none") + guides(fill="none") +  
   scale_fill_manual(values = safe_colorblind_palette,name="")+
   ylab("1995-2015 Geometric Mean of Population Growth Rate")
@@ -112,7 +111,7 @@ plot_bar2 <- ggplot(data_sum_2,aes(x=Alternatives,y=lambda_relative,fill=Alterna
                  axis.text.y = element_text(size=8, color="black"), 
                  axis.title.x = element_blank(),
                  axis.title.y = element_text(size = 8, angle = 90),
-                 strip.text = element_text(size = 7),
+                 strip.text = element_text(size = 7),legend.text=element_text(size=6),
                  legend.position = "none") + guides(fill="none") +  
   scale_fill_manual(values = safe_colorblind_palette,name="")+
   ylab("Mean porportional change in lambda vs NAA")
@@ -133,7 +132,7 @@ plot_lambda <- ggplot(data_fig) +
                  axis.text.x=element_text(size=9, color="black",angle=45,hjust=1), 
                  axis.text.y = element_text(size=8, color="black"), 
                  axis.title.x = element_blank(),
-                 axis.title.y = element_text(size = 9, angle = 90),
+                 axis.title.y = element_text(size = 9, angle = 90),legend.text=element_text(size=6),
                  strip.text = element_text(size = 7),
                  legend.position = "top") + 
   ylab("Population Growth Rate")+
@@ -159,7 +158,7 @@ plot_relative <- ggplot(data_fig_percent) +
                  axis.text.y = element_text(size=8, color="black"), 
                  axis.title.x = element_blank(),
                  axis.title.y = element_text(size = 9, angle = 90),
-                 strip.text = element_text(size = 7),
+                 strip.text = element_text(size = 7),legend.text=element_text(size=6),
                  legend.position = "top") + 
   ylab("% change in population growth rate from NAA")+
   scale_colour_manual(values = safe_colorblind_palette2,name="")+
@@ -177,6 +176,25 @@ data_input_ROC <- read.csv(file.path("../Salinity_Zooplankton_analysis/FlowZoopD
   # Change outflow values to total volume in acre foot
   mutate(Outflow_Jun0Aug0 = Outflow_Jun0Aug0 *1.983)
 
+#Change names per Julia Taylor's email
+unique(data_input_ROC$scenario)
+data_input_ROC <- data_input_ROC %>% rename(scenario_original=scenario) %>% mutate(scenario = case_when(
+  scenario_original == "Alt1" ~ "Alt1",
+  scenario_original == "Alt2v1wTUCP" ~ "Alt2wTUCPwoVA",
+  scenario_original == "Alt2v1woTUCP" ~ "Alt2woTUCPwoVA",
+  scenario_original == "Alt2v2noTUCP" ~ "Alt2woTUCPDeltaVA",
+  scenario_original == "Alt2v3noTUCP" ~ "Alt2woTUCPAllVA",
+  scenario_original == "Alt3" ~ "Alt3",
+  scenario_original == "Alt4" ~ "Alt4",
+  scenario_original == "EXP1" ~ "EXP1",
+  scenario_original == "EXP3" ~ "EXP3",
+  scenario_original == "NAA" ~ "NAA"
+))
+
+data_input_ROC$scenario_original<-NULL
+str(data_input_ROC)
+data_input_ROC <- data_input_ROC %>% 
+  dplyr::select(Cohort_Year, scenario, ACM_BPUV_Feb1Feb1, ACM_BPUV_Mar1Mar1, Outflow_Jun0Aug0,OMR_AprMar,OMR_Jun,OMR_DecJan, OMR_Feb, OMR_Mar)
 
 data_lcme_original <-read_xlsx(file.path("../Zooplankton_input_original/LCME covariates.xlsx"),sheet="Best model covariates")
 
@@ -223,7 +241,7 @@ grid.arrange(plot1, plot2, plot3,as_ggplot(leg), ncol = 1)
 ```
 Figure 3. Outflow and prey metric data based on CalSim3 data and salinity-zooplankton model relative to the original dataset used to build the Delta Smelt LCME (labeled as "Empirical"): June-August sum of Delta outflow, February and March prey metric (biomass per volume) data composed of copepod adults, cladocerans, and mysids 
 
-```{r plot 4,echo=FALSE, messages=FALSE, dpi=300, fig.width=8, fig.height=11}
+```{r plot 4,echo=FALSE, messages=FALSE, dpi=300, fig.width=12, fig.height=16}
 plot4<-datainput_plot(df=data_input_ROC, titletext="",ytitletext = "April-May daily average OMR in cfs",xtitletext="Cohort Year",parameter=data_input_ROC$OMR_AprMar) + theme(legend.position = "none")
 
 plot5<-datainput_plot(df=data_input_ROC, titletext="",ytitletext = "June daily average OMR in cfs",xtitletext="Cohort Year",parameter=data_input_ROC$OMR_Jun) + theme(legend.position = "none")
@@ -235,7 +253,7 @@ plot7<-datainput_plot(df=data_input_ROC, titletext="",ytitletext = "February dai
 
 
 plot8<-datainput_plot(df=data_input_ROC, titletext="",ytitletext = "March daily average OMR in cfs",xtitletext="Cohort Year",parameter=data_input_ROC$OMR_Mar) +  theme(
-                 legend.position = "none")
+                 legend.position = "none",legend.text=element_text(size=7))
 
 grid.arrange(plot4, plot5, plot6, plot7, plot8,as_ggplot(leg), ncol = 2)
 

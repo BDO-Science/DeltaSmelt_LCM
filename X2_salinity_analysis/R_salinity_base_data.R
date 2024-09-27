@@ -13,7 +13,9 @@ library(lubridate)
 library(conflicted)
 library(deltamapr)
 require(discretewq)
+library(sf)
 conflict_prefer("rename", "dplyr")
+conflicts_prefer(dplyr::filter)
 
 #Use same datasets as CSAMP Delta Smelt SDM
 wq_data <-  wq(Sources = c("EMP", "STN", "FMWT", "EDSM", "DJFMP",

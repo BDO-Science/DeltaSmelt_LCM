@@ -18,7 +18,7 @@ wtr.yr<-c(1,1,1,1,1,1,4,4,2,3,3,1,4,5,4,3,1,3,4,5,5) # Sacto WY type wet = 1, cr
 
 # Action effects
 #CalSim <- read.csv('D:/FWS/JAGS/CAA/DSLCM/Models/DSLCM_Entrainment/BoR Reiniation 2023/FlowZoopData_2022ROC_EffectsAnalysis_CohortYear.csv',header=T)
-CalSim <- read.csv(file.path("Salinity_Zooplankton_analysis","FlowZoopData_2022ROC_EffectsAnalysis_CohortYear_2024-09-05.csv"),header=T)
+CalSim <- read.csv(file.path("Salinity_Zooplankton_analysis","FlowZoopData_2022ROC_EffectsAnalysis_CohortYear_2024-09-25.csv"),header=T)
 
 CalSim[,5] <- 1.9834710990151385*CalSim[,5] # convert cfs to sum of acre-feet for 3 months
 CalSim.act <- c('Alt1','Alt2v1wTUCP','Alt2v1woTUCP','Alt2v2noTUCP','Alt2v3noTUCP','Alt3','Alt4','EXP1','EXP3','NAA')
@@ -343,7 +343,7 @@ all.lam.mn <- cbind(all.lam.mn,lam.mn)
 colnames(all.lamAB)<-colnames(all.lam.mn)<-CalSim.act
 #write.table(all.lamAB,file='C:/Users/wsmith/Desktop/lamAB.ROC.csv')
 #write.table(all.lam.mn,file='C:/Users/wsmith/Desktop/lam.mn.ROC.csv')
-write.csv(all.lamAB,file=file.path("DeltaSmeltLCME_output","lamAB.ROC_2024-09-10.csv"))
-write.csv(all.lam.mn,file=file.path("DeltaSmeltLCME_output","lam.mn.ROC_2024-09-10.csv"))
+write.csv(all.lamAB,file=file.path("DeltaSmeltLCME_output","lamAB.ROC_2024-09-25.csv"))
+write.csv(all.lam.mn,file=file.path("DeltaSmeltLCME_output","lam.mn.ROC_2024-09-25.csv"))
 
 #write.table(all.lam.mn,file='lam.mn.ROC.csv')

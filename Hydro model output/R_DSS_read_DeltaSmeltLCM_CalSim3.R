@@ -97,12 +97,12 @@ EXP3_data <- dss_data_pull_LCME(dss_input="C:\\Users\\bmahardja\\Documents\\2023
 NAA_data <- dss_data_pull_LCME(dss_input="C:\\Users\\bmahardja\\Documents\\2023-09-15 - DSS files for 2021 ROC\\NAA_output\\CS3_LTO_NAA_2022MED_09072023_L2020A_DV_dp")
 
 Alt1_data <- dss_data_pull_LCME(dss_input="C:\\Users\\bmahardja\\Documents\\2023-09-15 - DSS files for 2021 ROC\\Alt1_output\\CS3_ALT1_2022MED_09092023_L2020A_DV_dp")
-Alt2v1woTUCP_data <- dss_data_pull_LCME(dss_input="C:\\Users\\bmahardja\\Documents\\2023-09-15 - DSS files for 2021 ROC\\Alt2v1woTUCP_output\\CS3_Alt2v1_woTUCP_2022MED_09072023_L2020A_DV_dp")
-Alt2v1wTUCP_data <- dss_data_pull_LCME(dss_input="C:\\Users\\bmahardja\\Documents\\2023-09-15 - DSS files for 2021 ROC\\Alt2v1wTUCP_output\\CS3_Alt2v1_wTUCP_2022MED_09072023_L2020A_DV_dp")
-Alt2v2noTUCP_data <- dss_data_pull_LCME(dss_input="C:\\Users\\bmahardja\\Documents\\2023-09-15 - DSS files for 2021 ROC\\Alt2v2noTUCP_output\\CS3_Alt2v2_woTUCP_2022MED_09072023_L2020A_DV_dp")
-Alt2v3noTUCP_data <- dss_data_pull_LCME(dss_input="C:\\Users\\bmahardja\\Documents\\2023-09-15 - DSS files for 2021 ROC\\Alt2v3noTUCP_output\\CS3_LTO_Alt2v3_woTUCP_2022MED_09072023_L2020A_DV_dp")
+Alt2v1woTUCP_data <- dss_data_pull_LCME(dss_input="D:\\USBR BDO\\2024-09-26 - New LTO CalSim3 runs for alt 2 and alt 4\\Reclamation_2021LTO_CalSim3_Alt2v1_woTUCP_2022MED_09132024\\DSS\\output\\CS3_Alt2v1_woTUCP_2022MED_09132024_L2020A_DV_dp")
+Alt2v1wTUCP_data <- dss_data_pull_LCME(dss_input="D:\\USBR BDO\\2024-09-26 - New LTO CalSim3 runs for alt 2 and alt 4\\Reclamation_2021LTO_CalSim3_Alt2v1_wTUCP_2022MED_09132024\\DSS\\output\\CS3_Alt2v1_wTUCP_2022MED_09132024_L2020A_DV_dp")
+Alt2v2noTUCP_data <- dss_data_pull_LCME(dss_input="D:\\USBR BDO\\2024-09-26 - New LTO CalSim3 runs for alt 2 and alt 4\\Reclamation_2021LTO_CalSim3_Alt2v2_noTUCP_2022MED_09132024\\DSS\\output\\CS3_Alt2v2_woTUCP_2022MED_09132024_L2020A_DV_dp")
+Alt2v3noTUCP_data <- dss_data_pull_LCME(dss_input="D:\\USBR BDO\\2024-09-26 - New LTO CalSim3 runs for alt 2 and alt 4\\Reclamation_2021LTO_CalSim3_Alt2v3_noTUCP_2022MED_09132024\\DSS\\output\\CS3_Alt2v3_woTUCP_2022MED_09132024_L2020A_DV_dp")
 Alt3_data <- dss_data_pull_LCME(dss_input="C:\\Users\\bmahardja\\Documents\\2023-09-15 - DSS files for 2021 ROC\\Alt3_output\\CS3_ALT3_2022med_L2020ADV_dp")
-Alt4_data <- dss_data_pull_LCME(dss_input="C:\\Users\\bmahardja\\Documents\\2023-09-15 - DSS files for 2021 ROC\\Alt4_output\\CS3_LTO_Alt4_2022MED_09082023_L2020A_DV_dp")
+Alt4_data <- dss_data_pull_LCME(dss_input="D:\\USBR BDO\\2024-09-26 - New LTO CalSim3 runs for alt 2 and alt 4\\Reclamation_2021LTO_CalSim3_Alt4_2022MED_09162024\\DSS\\output\\CS3_LTO_Alt4_2022MED_09162024_L2020A_DV_dp")
 
 
 
