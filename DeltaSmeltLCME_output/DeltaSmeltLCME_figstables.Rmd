@@ -119,8 +119,28 @@ plot_bar2 <- ggplot(data_sum_2,aes(x=Alternatives,y=lambda_relative,fill=Alterna
 grid.arrange(plot_bar, plot_bar2, nrow = 2)
 
 
+
 ```
 Figure 12. Top: Bar plot demonstrating the geometric mean of population growth rate (lambda) from 1995 to 2015 for the various alternatives as seen in Table 4. Bottom: Bar plot demonstrating the relative difference in geometric mean of population growth rate (1995-2015) for each alternative compared to the no action alternative 
+```{r eis, echo=FALSE, messages=FALSE, dpi=300, fig.width=6, fig.height=4}
+
+data_bar_eis <- data_bar %>% dplyr::filter(!Alternatives %in% c("EXP1","EXP3"))
+
+plot_bar_EIS <- ggplot(data_bar_eis,aes(x=Alternatives,y=lambda,fill=Alternatives)) +  
+  geom_col() +
+  theme_bw() +
+  theme(plot.title=element_text(size=13), 
+                 axis.text.x=element_text(size=9, color="black",angle=45,hjust=1), 
+                 axis.text.y = element_text(size=8, color="black"), 
+                 axis.title.x = element_blank(),
+                 axis.title.y = element_text(size = 8, angle = 90),
+                 strip.text = element_text(size = 7),legend.text=element_text(size=6),
+                 legend.position = "none") + guides(fill="none") +  
+  scale_fill_manual(values = safe_colorblind_palette,name="")+
+  ylab("1995-2015 Geometric Mean of Population Growth Rate")
+plot_bar_EIS
+
+```
 
 ```{r lambda plot, echo=FALSE, messages=FALSE, dpi=300, fig.width=6, fig.height=8}
 
