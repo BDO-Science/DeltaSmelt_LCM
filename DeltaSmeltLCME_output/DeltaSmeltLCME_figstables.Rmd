@@ -96,7 +96,8 @@ plot_bar <- ggplot(data_bar,aes(x=Alternatives,y=lambda,fill=Alternatives)) +
                  axis.title.x = element_blank(),
                  axis.title.y = element_text(size = 8, angle = 90),
                  strip.text = element_text(size = 7),legend.text=element_text(size=6),
-                 legend.position = "none") + guides(fill="none") +  
+                 legend.position = "none") + guides(fill="none") + 
+  geom_hline(yintercept = 1, col = "red",linetype=2) +
   scale_fill_manual(values = safe_colorblind_palette,name="")+
   ylab("1995-2015 Geometric Mean of Population Growth Rate")
 
@@ -128,6 +129,7 @@ data_bar_eis <- data_bar %>% dplyr::filter(!Alternatives %in% c("EXP1","EXP3"))
 
 plot_bar_EIS <- ggplot(data_bar_eis,aes(x=Alternatives,y=lambda,fill=Alternatives)) +  
   geom_col() +
+  geom_hline(yintercept = 1, col = "red",linetype=2) +
   theme_bw() +
   theme(plot.title=element_text(size=13), 
                  axis.text.x=element_text(size=9, color="black",angle=45,hjust=1), 
