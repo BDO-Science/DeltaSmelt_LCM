@@ -35,7 +35,7 @@ conflict_prefer("select", "dplyr")
 ```
 
 ```{r load data, warning=FALSE, echo=FALSE, messages=FALSE,error=FALSE}
-data_model <-read_xlsx("BoR Reinitiation LCME results_09-26-2024.xlsx", skip = 1, sheet="CalSim flow actions") %>% select(c(1:12)) %>%
+data_model <-read_xlsx("BoR Reinitiation LCME results_06-16-2025.xlsx", skip = 1, sheet="CalSim flow actions") %>% select(c(1:13)) %>%
   rename(Year = names(.)[1],Empirical=base) %>% filter(Year %in% c(1995:2015)) %>%
   rename(Alt1 = Alt1...3,
          Alt2wTUCPwoVA = Alt2v1wTUCP...4,
@@ -44,16 +44,17 @@ data_model <-read_xlsx("BoR Reinitiation LCME results_09-26-2024.xlsx", skip = 1
          Alt2woTUCPAllVA = Alt2v3noTUCP...7,
          Alt3=Alt3...8,
          Alt4=Alt4...9,
-         EXP1=EXP1...10,
-         EXP3=EXP3...11)
+         Act5=Alt5...10,
+         EXP1=EXP1...11,
+         EXP3=EXP3...12)
 
 wy_type<- data.frame(Year=c(1995:2016),WY_Type=c("Wet","Wet","Wet","Wet","Wet","Above Normal","Dry","Dry","Above Normal","Below Normal","Above Normal","Wet","Dry","Critically Dry","Dry","Below Normal","Wet","Below Normal","Dry","Critically Dry","Critically Dry","Below Normal")) %>%
   mutate(wet_vs_dry= ifelse(WY_Type %in% c("Wet","Above Normal"), "Wet and Above Normal years","Below Normal, Dry, or Critically Dry years"))
 
-data_table <- data_model%>% mutate_at(vars(c(2:12)), list( ~round(., 2))) %>% mutate(Year=as.integer(Year)) %>% left_join(wy_type) %>% select(-wet_vs_dry) %>%
+data_table <- data_model%>% mutate_at(vars(c(2:13)), list( ~round(., 2))) %>% mutate(Year=as.integer(Year)) %>% left_join(wy_type) %>% select(-wet_vs_dry) %>%
   rename('Sacramento Valley Water Year Index'=WY_Type)
 
-data_fig <- data_model %>% gather("Alternatives","lambda",2:12) %>% mutate(Year=as.numeric(Year),Alternatives=as.factor(Alternatives))
+data_fig <- data_model %>% gather("Alternatives","lambda",2:13) %>% mutate(Year=as.numeric(Year),Alternatives=as.factor(Alternatives))
 
 # Create table with caption
 knitr::kable(data_table , padding=0, caption="Table 3. Predicted population growth rate (lambda) for each cohort year by alternatives.")
@@ -71,7 +72,7 @@ data_sum <- data_fig %>%
   group_by(Alternatives) %>% summarise(geometric_mean_lambda=exp(mean(log(lambda)))) %>%
   mutate(Category="1995-2015") %>% spread(Alternatives,geometric_mean_lambda)
 
-data_combine_sum <- bind_rows(data_sum,data_wy,data_time) %>% mutate_at(vars(c(2:12)), list( ~round(., 2)))
+data_combine_sum <- bind_rows(data_sum,data_wy,data_time) %>% mutate_at(vars(c(2:13)), list( ~round(., 2)))
 
 # Create table with caption
 knitr::kable(data_combine_sum , padding=0, caption="Table 4. Geometric mean of population growth rate (lambda) for each alternative.") 
@@ -81,9 +82,9 @@ knitr::kable(data_combine_sum , padding=0, caption="Table 4. Geometric mean of p
 ```{r barplot_sum, echo=FALSE, messages=FALSE, dpi=300, fig.width=6, fig.height=8}
 
 safe_colorblind_palette <- c("#88CCEE", "#CC6677", "#DDCC77", "#117733", "#332288", "#AA4499", 
-                             "#44AA99", "red", "#882255", "#999933", "#6699CC", "#888888")
+                             "#44AA99", "#882255", "red", "#999933", "#6699CC", "#888888")
 
-data_bar <- data_combine_sum %>% gather("Alternatives","lambda",2:12) %>%
+data_bar <- data_combine_sum %>% gather("Alternatives","lambda",2:13) %>%
   filter(Category=="1995-2015") %>% mutate(Alternatives=as.factor(Alternatives))
 
 
@@ -194,13 +195,14 @@ Figure 11. Top: Line plot of population growth rate (lambda) across alternatives
 
 ```{r data input, echo=FALSE, messages=FALSE, dpi=300, fig.width=9, fig.height=13}
 #Code to check data input and compare with actual data
-data_input_ROC <- read.csv(file.path("../Salinity_Zooplankton_analysis/FlowZoopData_2022ROC_EffectsAnalysis_CohortYear.csv")) %>%
+data_input_ROC <- read.csv(file.path("../Salinity_Zooplankton_analysis/FlowZoopData_2022ROC_EffectsAnalysis_CohortYear_2024-09-25.csv")) %>%
   # Change outflow values to total volume in acre foot
   mutate(Outflow_Jun0Aug0 = Outflow_Jun0Aug0 *1.983)
 
 #Change names per Julia Taylor's email
 unique(data_input_ROC$scenario)
 data_input_ROC <- data_input_ROC %>% rename(scenario_original=scenario) %>% mutate(scenario = case_when(
+  scenario_original == "Alt5" ~ "Act5",
   scenario_original == "Alt1" ~ "Alt1",
   scenario_original == "Alt2v1wTUCP" ~ "Alt2wTUCPwoVA",
   scenario_original == "Alt2v1woTUCP" ~ "Alt2woTUCPwoVA",

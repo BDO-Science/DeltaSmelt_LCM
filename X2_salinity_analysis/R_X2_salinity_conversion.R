@@ -24,6 +24,8 @@ Alt2v2noTUCP_data <- read.csv(file.path(hydro_root,"Alt2v2noTUCP_CalSim3_data.cs
 Alt2v3noTUCP_data <- read.csv(file.path(hydro_root,"Alt2v3noTUCP_CalSim3_data.csv")) 
 Alt3_data <- read.csv(file.path(hydro_root,"Alt3_CalSim3_data.csv")) 
 Alt4_data <- read.csv(file.path(hydro_root,"Alt4_CalSim3_data.csv")) 
+Alt5_data <- read.csv(file.path(hydro_root,"Alt5_CalSim3_data.csv")) %>% mutate(Date=as.Date(Date, format = "%m/%d/%Y")) %>%
+  mutate(Date=as.character(Date))
 
 # Combine X2 data
 x2_data <- NAA_data %>% select(Date,X2_current) %>% mutate(Scenario="NAA") %>%
@@ -35,9 +37,10 @@ x2_data <- NAA_data %>% select(Date,X2_current) %>% mutate(Scenario="NAA") %>%
   bind_rows((Alt2v2noTUCP_data %>% select(Date,X2_current) %>% mutate(Scenario="Alt2v2noTUCP"))) %>%
   bind_rows((Alt2v3noTUCP_data %>% select(Date,X2_current) %>% mutate(Scenario="Alt2v3noTUCP"))) %>%
   bind_rows((Alt3_data %>% select(Date,X2_current) %>% mutate(Scenario="Alt3"))) %>%
-  bind_rows((Alt4_data %>% select(Date,X2_current) %>% mutate(Scenario="Alt4")))
+  bind_rows((Alt4_data %>% select(Date,X2_current) %>% mutate(Scenario="Alt4"))) %>%
+  bind_rows((Alt5_data %>% select(Date,X2_current) %>% mutate(Scenario="Alt5")))
 
-x2_data <- na.omit(x2_data) %>% rename(X2 = X2_current) %>% mutate(Month=month(Date))
+x2_data <- na.omit(x2_data) %>% rename(X2 = X2_current) %>% mutate(Date=as.Date(Date)) %>% mutate(Month=month(Date))
 
 # Create X2 data frame for all relevant regions
 x2_data_expanded <- crossing(x2_data, Region=c("NW Suisun","SW Suisun","NE Suisun","SE Suisun","Confluence", "Suisun Marsh"))
@@ -82,7 +85,6 @@ sum(is.na(X2.sal.dat$sal))
 # Convert to z-score prior to model predict
 x2_data_expanded <- x2_data_expanded %>% mutate(X2_original=X2, X2=(X2-mean(X2.sal.dat$X2))/sd(X2.sal.dat$X2))
 
-
 # Use the CSAMP X2-Salinity model to convert CalSim3 X2 values to salinity
 x2_data_expanded$salinity<-predict(salX2mod,x2_data_expanded, type="response")
 
@@ -90,14 +92,14 @@ x2_data_expanded$salinity<-predict(salX2mod,x2_data_expanded, type="response")
 x2_data_expanded$salinity <- ifelse(x2_data_expanded$salinity<0.1,0.1,x2_data_expanded$salinity)
 
 # Finalize data format
-x2_data_expanded <- x2_data_expanded %>%
+x2_data_expanded_wide <- x2_data_expanded %>%
   mutate(year=year(Date)) %>% rename(region=Region, month=Month) %>% select(-Date,-X2,-X2_original) %>%
-  spread(Scenario,salinity) 
+  pivot_wider(names_from=Scenario,values_from=salinity) 
 
 # Rename column names to sal_
-colnames(x2_data_expanded)[4:ncol(x2_data_expanded)] <- paste("sal", colnames(x2_data_expanded)[4:ncol(x2_data_expanded)] , sep = "_")
+colnames(x2_data_expanded_wide)[4:ncol(x2_data_expanded_wide)] <- paste("sal", colnames(x2_data_expanded_wide)[4:ncol(x2_data_expanded_wide)] , sep = "_")
 
 
 #Export output file for  model input
-write.csv(x2_data_expanded,file.path(salinity_root,"converted_salinity_data.csv"),row.names=F)
+write.csv(x2_data_expanded_wide,file.path(salinity_root,"converted_salinity_data.csv"),row.names=F)
 

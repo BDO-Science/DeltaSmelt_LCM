@@ -12,6 +12,7 @@ library(tidyverse)
 library(stringr)
 library(lubridate)
 library(rJava)
+library(rJavaEnv)
 
 
 #############
@@ -65,7 +66,6 @@ libs <- "-Djava.library.path=C:\\Program Files\\HEC\\HEC-DSSVue\\lib\\"
 
 .jinit(classpath = jars, parameters = libs)
 
-
 ##########
 # Function to assemble the dataset
 
@@ -92,17 +92,18 @@ dss_data_pull_LCME<-function(dss_input="D:\\2023-01-06 - CalSim3 example file fo
 
 
 #Use the function to create data frame
-EXP1_data <- dss_data_pull_LCME(dss_input="C:\\Users\\bmahardja\\Documents\\2023-09-15 - DSS files for 2021 ROC\\EXP1_output\\LTO_BA_EXP1_2022MED_DV")
-EXP3_data <- dss_data_pull_LCME(dss_input="C:\\Users\\bmahardja\\Documents\\2023-09-15 - DSS files for 2021 ROC\\EXP3_output\\LTO_BA_EXP3_2022MED_DV")
-NAA_data <- dss_data_pull_LCME(dss_input="C:\\Users\\bmahardja\\Documents\\2023-09-15 - DSS files for 2021 ROC\\NAA_output\\CS3_LTO_NAA_2022MED_09072023_L2020A_DV_dp")
+EXP1_data <- dss_data_pull_LCME(dss_input="D:\\USBR BDO\\2023-09-15 - DSS files for 2021 ROC\\EXP1_output\\LTO_BA_EXP1_2022MED_DV")
+EXP3_data <- dss_data_pull_LCME(dss_input="D:\\USBR BDO\\2023-09-15 - DSS files for 2021 ROC\\EXP3_output\\LTO_BA_EXP3_2022MED_DV")
+NAA_data <- dss_data_pull_LCME(dss_input="D:\\USBR BDO\\2023-09-15 - DSS files for 2021 ROC\\NAA_output\\CS3_LTO_NAA_2022MED_09072023_L2020A_DV_dp")
 
-Alt1_data <- dss_data_pull_LCME(dss_input="C:\\Users\\bmahardja\\Documents\\2023-09-15 - DSS files for 2021 ROC\\Alt1_output\\CS3_ALT1_2022MED_09092023_L2020A_DV_dp")
+Alt1_data <- dss_data_pull_LCME(dss_input="D:\\USBR BDO\\2023-09-15 - DSS files for 2021 ROC\\Alt1_output\\CS3_ALT1_2022MED_09092023_L2020A_DV_dp")
 Alt2v1woTUCP_data <- dss_data_pull_LCME(dss_input="D:\\USBR BDO\\2024-09-26 - New LTO CalSim3 runs for alt 2 and alt 4\\Reclamation_2021LTO_CalSim3_Alt2v1_woTUCP_2022MED_09132024\\DSS\\output\\CS3_Alt2v1_woTUCP_2022MED_09132024_L2020A_DV_dp")
 Alt2v1wTUCP_data <- dss_data_pull_LCME(dss_input="D:\\USBR BDO\\2024-09-26 - New LTO CalSim3 runs for alt 2 and alt 4\\Reclamation_2021LTO_CalSim3_Alt2v1_wTUCP_2022MED_09132024\\DSS\\output\\CS3_Alt2v1_wTUCP_2022MED_09132024_L2020A_DV_dp")
 Alt2v2noTUCP_data <- dss_data_pull_LCME(dss_input="D:\\USBR BDO\\2024-09-26 - New LTO CalSim3 runs for alt 2 and alt 4\\Reclamation_2021LTO_CalSim3_Alt2v2_noTUCP_2022MED_09132024\\DSS\\output\\CS3_Alt2v2_woTUCP_2022MED_09132024_L2020A_DV_dp")
 Alt2v3noTUCP_data <- dss_data_pull_LCME(dss_input="D:\\USBR BDO\\2024-09-26 - New LTO CalSim3 runs for alt 2 and alt 4\\Reclamation_2021LTO_CalSim3_Alt2v3_noTUCP_2022MED_09132024\\DSS\\output\\CS3_Alt2v3_woTUCP_2022MED_09132024_L2020A_DV_dp")
-Alt3_data <- dss_data_pull_LCME(dss_input="C:\\Users\\bmahardja\\Documents\\2023-09-15 - DSS files for 2021 ROC\\Alt3_output\\CS3_ALT3_2022med_L2020ADV_dp")
+Alt3_data <- dss_data_pull_LCME(dss_input="D:\\USBR BDO\\2023-09-15 - DSS files for 2021 ROC\\Alt3_output\\CS3_ALT3_2022med_L2020ADV_dp")
 Alt4_data <- dss_data_pull_LCME(dss_input="D:\\USBR BDO\\2024-09-26 - New LTO CalSim3 runs for alt 2 and alt 4\\Reclamation_2021LTO_CalSim3_Alt4_2022MED_09162024\\DSS\\output\\CS3_LTO_Alt4_2022MED_09162024_L2020A_DV_dp")
+Alt5_data <- dss_data_pull_LCME(dss_input="D:\\USBR BDO\\2025-06-10 - DSS file for Action 5\\CS3_Alt5_JPF_wTUCP_2022MED_0525_dv")
 
 
 
@@ -117,7 +118,23 @@ write.csv(Alt2v2noTUCP_data,file.path(output_root,"Alt2v2noTUCP_CalSim3_data.csv
 write.csv(Alt2v3noTUCP_data,file.path(output_root,"Alt2v3noTUCP_CalSim3_data.csv"),row.names=F)
 write.csv(Alt3_data,file.path(output_root,"Alt3_CalSim3_data.csv"),row.names=F)
 write.csv(Alt4_data,file.path(output_root,"Alt4_CalSim3_data.csv"),row.names=F)
+write.csv(Alt5_data,file.path(output_root,"Alt5_CalSim3_data.csv"),row.names=F)
 
+#Read Act 5 file
+
+EXP1_data <- read.csv("EXP1_CalSim3_data.csv")
+EXP3_data <- read.csv("EXP3_CalSim3_data.csv")
+NAA_data <- read.csv("NAA_CalSim3_data.csv")
+
+Alt1_data <- read.csv("Alt1_CalSim3_data.csv")
+Alt2v1woTUCP_data <- read.csv("Alt2v1woTUCP_CalSim3_data.csv")
+Alt2v1wTUCP_data <- read.csv("Alt2v1wTUCP_CalSim3_data.csv")
+Alt2v2noTUCP_data <- read.csv("Alt2v2noTUCP_CalSim3_data.csv")
+Alt2v3noTUCP_data <- read.csv("Alt2v3noTUCP_CalSim3_data.csv")
+Alt3_data <- read.csv("Alt3_CalSim3_data.csv")
+Alt4_data <- read.csv("Alt4_CalSim3_data.csv")
+
+Alt5_data <- read.csv("Alt5_CalSim3_data.csv")
 
 ##### Calculate flow input for the Delta Smelt LCME
 
@@ -131,11 +148,12 @@ Alt2v2noTUCP_data <- Alt2v2noTUCP_data %>% mutate(scenario="Alt2v2noTUCP")
 Alt2v3noTUCP_data <- Alt2v3noTUCP_data %>% mutate(scenario="Alt2v3noTUCP")
 Alt3_data <- Alt3_data %>% mutate(scenario="Alt3")
 Alt4_data <- Alt4_data %>% mutate(scenario="Alt4")
+Alt5_data <- Alt4_data %>% mutate(scenario="Alt5")
 
 combined_data <- bind_rows(EXP1_data,EXP3_data,NAA_data,Alt1_data,
                            Alt2v1woTUCP_data,Alt2v1wTUCP_data,Alt2v2noTUCP_data,Alt2v3noTUCP_data,
                            Alt3_data,
-                           Alt4_data)
+                           Alt4_data,Alt5_data)
 
 #Per Will Smith's excel documentation
 #-time is indexed by cohort year, with the first month of the year beginning in April
@@ -202,4 +220,4 @@ data_flowinput_LCM <- data_DeltaOutflow %>% left_join(data_OMR_Apr_May) %>% left
   left_join(data_OMR_Mar)
 
 #Export data
-write.csv(data_flowinput_LCM,file.path(output_root,"FlowData_2022ROC_EffectsAnalysis_CohortYear.csv"),row.names=F)
+write.csv(data_flowinput_LCM,file.path(output_root,"FlowData_2025_act5_EffectsAnalysis_CohortYear.csv"),row.names=F)
